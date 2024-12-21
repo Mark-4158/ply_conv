@@ -1,0 +1,15 @@
+[Unit]
+Description=Label Plymouth Boot Screen on %I
+DefaultDependencies=no
+Wants=systemd-ask-password-plymouth.path systemd-vconsole-setup.service
+After=systemd-vconsole-setup.service systemd-udev-trigger.service systemd-udevd.service
+Before=systemd-ask-password-plymouth.service
+OnFailure=plymouth-start@.service
+ConditionKernelCommandLine=!plymouth.enable=0
+ConditionVirtualization=!container
+
+[Service]
+ExecCondition=/bin/test -O /dev/%I
+ExecCondition=/bin/grep %I /sys/devices/virtual/tty/tty0/active
+ExecStart=/usr/bin/plymouth --has-active-vt reactivate
+Type=oneshot
