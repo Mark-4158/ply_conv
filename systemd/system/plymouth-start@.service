@@ -1,0 +1,23 @@
+[Unit]
+Description=Show Plymouth Boot Screen on %I
+DefaultDependencies=no
+Wants=systemd-ask-password-plymouth.path systemd-vconsole-setup.service
+After=systemd-vconsole-setup.service systemd-udev-trigger.service systemd-udevd.service
+ConditionKernelCommandLine=!plymouth.enable=0
+ConditionVirtualization=!container
+
+PartOf=plymouth-getty@.service
+Before=plymouth-getty@.service
+PropagatesReloadTo=plymouth-getty@.service
+
+[Service]
+ExecStart=-/usr/sbin/plymouthd --no-daemon --no-boot-log --tty %I
+ExecStartPost=/usr/bin/plymouth --show-splash display-message --text %I
+ExecStopPost=/bin/grep %I /sys/devices/virtual/tty/tty0/active
+ExecStopPost=/usr/bin/plymouth quit --retain-splash
+Type=exec
+Restart=on-success
+RestartSec=0
+RestartKillSignal=SIGIO
+SendSIGHUP=yes
+SendSIGKILL=no
